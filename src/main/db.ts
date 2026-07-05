@@ -9,6 +9,7 @@ import type {
   RunResult,
   Verdict
 } from '../shared/types'
+import type { RuntimeEvent } from '../shared/runtime'
 
 export type DB = Database.Database
 
@@ -38,6 +39,19 @@ CREATE TABLE IF NOT EXISTS run_log (
 CREATE TABLE IF NOT EXISTS reject_log (
   id TEXT PRIMARY KEY, source_channel TEXT, raw_text TEXT,
   role TEXT, company TEXT, reason TEXT, created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS runtime_state (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS runtime_events (
+  id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,
+  message TEXT NOT NULL,
+  details TEXT,
+  created_at TEXT NOT NULL
 );
 `
 
@@ -179,4 +193,82 @@ export function logRun(db: DB, r: RunResult): void {
     r.rejected,
     JSON.stringify(r.errors)
   )
+}
+
+export function setRuntimeState(db: DB, key: string, value: string): void {
+  db.prepare(
+    `INSERT INTO runtime_state (key, value)
+     VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+  ).run(key, value)
+}
+
+export function getRuntimeState(db: DB, key: string): string | null {
+  const row = db.prepare('SELECT value FROM runtime_state WHERE key = ?').get(key) as
+    | { value?: string }
+    | undefined
+  return row?.value ?? null
+}
+
+export function appendRuntimeEvent(
+  db: DB,
+  event: Omit<RuntimeEvent, 'id' | 'createdAt'> & { createdAt?: string }
+): RuntimeEvent {
+  const createdAt = event.createdAt ?? new Date().toISOString()
+  const row: RuntimeEvent = {
+    id: randomUUID(),
+    kind: event.kind,
+    message: event.message,
+    details: event.details ?? null,
+    createdAt
+  }
+  db.prepare(
+    `INSERT INTO runtime_events (id, kind, message, details, created_at)
+     VALUES (?, ?, ?, ?, ?)`
+  ).run(row.id, row.kind, row.message, row.details, row.createdAt)
+  return row
+}
+
+export function listRuntimeEvents(db: DB, limit = 25): RuntimeEvent[] {
+  return db
+    .prepare(
+      `SELECT id, kind, message, details, created_at
+       FROM runtime_events
+       ORDER BY created_at DESC
+       LIMIT ?`
+    )
+    .all(limit)
+    .map((r: any) => ({
+      id: r.id,
+      kind: r.kind,
+      message: r.message,
+      details: r.details ?? null,
+      createdAt: r.created_at
+    }))
+}
+
+export function getRuntimeSnapshot(db: DB): { eventCount: number; lastEvent: RuntimeEvent | null } {
+  const row = db
+    .prepare('SELECT COUNT(*) as count FROM runtime_events')
+    .get() as { count?: number } | undefined
+  const last = db
+    .prepare(
+      `SELECT id, kind, message, details, created_at
+       FROM runtime_events
+       ORDER BY created_at DESC
+       LIMIT 1`
+    )
+    .get() as any
+  return {
+    eventCount: row?.count ?? 0,
+    lastEvent: last
+      ? {
+          id: last.id,
+          kind: last.kind,
+          message: last.message,
+          details: last.details ?? null,
+          createdAt: last.created_at
+        }
+      : null
+  }
 }

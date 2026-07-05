@@ -1,7 +1,7 @@
 {
-  "name": "autopilot",
+  "name": "sunday",
   "version": "0.1.0",
-  "description": "Autopilot — autonomous job-lead aggregator (Electron, local-first)",
+  "description": "Sunday — autonomous bot runtime (Electron, local-first)",
   "main": "./out/main/index.js",
   "author": "Aryan",
   "type": "module",
