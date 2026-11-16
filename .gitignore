@@ -6,3 +6,4 @@ dist/
 .env
 leadgen.db
 leadgen.db-*
+.turbo/
