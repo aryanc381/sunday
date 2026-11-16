@@ -1,8 +1,9 @@
 node_modules/
 out/
 dist/
+.turbo/
 *.log
 .DS_Store
 .env
-leadgen.db
-leadgen.db-*
+*.db
+*.db-*

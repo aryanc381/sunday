@@ -1,34 +1,19 @@
 {
   "name": "sunday",
+  "private": true,
   "version": "0.1.0",
   "description": "Sunday — autonomous bot runtime (Electron, local-first)",
-  "main": "./out/main/index.js",
   "author": "Aryan",
-  "type": "module",
+  "packageManager": "npm@10.9.0",
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "electron-vite dev",
-    "build": "electron-vite build",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "rebuild": "electron-rebuild -f -w better-sqlite3"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.27.3",
-    "better-sqlite3": "^11.3.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules .turbo"
   },
   "devDependencies": {
-    "@electron/rebuild": "^3.6.0",
-    "@types/better-sqlite3": "^7.6.11",
-    "@types/node": "^20.14.0",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "electron": "^31.3.0",
-    "electron-vite": "^2.3.0",
-    "typescript": "^5.5.4",
-    "vite": "^5.4.0",
-    "vitest": "^2.0.5"
+    "turbo": "^2.3.0"
   }
 }
