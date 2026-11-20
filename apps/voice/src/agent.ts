@@ -22,7 +22,10 @@ async function runVoiceAgent(ctx: JobContext) {
   if (!room || !mode) throw new Error('The dispatch is missing the room or mode.');
   if (mode !== 'intake' && (!identity || !taskId)) throw new Error('The dispatch is missing the phone identity or task.');
 
+  // Delete the room on any exit, even a crash, so the phone is never left connected to nobody.
+  ctx.addShutdownCallback(() => closeRoom(room));
   await connectDB();
+  await ctx.connect();
   // Inbound calls have no known identity: the first phone participant in the room is the caller.
   const phone = await ctx.waitForParticipant(identity);
   // sip.phoneNumber is the number the inbound call comes from; compare digits only, as the carrier may leave off the +.
@@ -39,7 +42,6 @@ async function runVoiceAgent(ctx: JobContext) {
     console.error('voice provider failed', error);
     ctx.shutdown('Voice provider failed');
   });
-  ctx.addShutdownCallback(() => closeRoom(room));
 
   const task = taskId ? await getTask(taskId) : null;
   const contact = task ? await findContactById(task.contact_id.toString()) : null;
