@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { ServerOptions, cli, defineAgent, voice, waitForParticipantAttribute, type JobContext } from '@livekit/agents';
 import { CallAgent, speak } from './call-agent.js';
-import { agentName, closeRoom, startCall, type Mode } from './call.js';
+import { agentName, closeRoom, reportNoPickup, startCall, type Mode } from './call.js';
 import { connectDB } from './db.js';
 import { env } from './env.js';
 import { digitsOf } from './schemas/phone.schemas.js';
@@ -81,11 +81,19 @@ async function finish(mode: Mode, agent: CallAgent) {
   const task = await getTask(taskId);
   if (!task) throw new Error(`Task ${taskId} is missing.`);
   if (mode === 'intake') {
-    await startCall(task.phone, 'task', taskId);
+    try {
+      await startCall(task.phone, 'task', taskId);
+    } catch (error) {
+      console.error('could not place the task call', error);
+      await reportNoPickup(taskId, 'The call could not be placed.');
+    }
     return;
   }
-  // The person hung up before an outcome was saved.
-  if (!task.outcome) await saveOutcome(taskId, 'confused', 'The call ended before they confirmed.');
+  // No outcome was saved: if the person never spoke, the call did not really connect; otherwise they hung up midway.
+  if (!task.outcome) {
+    const spoke = agent.transcript.some((line) => line.role === 'user');
+    await saveOutcome(taskId, spoke ? 'confused' : 'no_pickup', spoke ? 'The call ended before they confirmed.' : 'The call was not answered.');
+  }
   await completeTask(taskId, agent.transcript);
   await startCall(env.ALLOWED_CALLER_NUMBER, 'report', taskId);
 }

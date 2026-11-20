@@ -38,22 +38,31 @@ async function dial(room: string, identity: string, phoneNumber: string) {
   await livekit().sip.createSipParticipant('', phoneNumber, room, options, trunk);
 }
 
-// Starts a task or report call: creates the room, sends the agent in, then dials in the background.
+// Starts a call: creates the room, sends the agent in, then dials in the background. An intake call has no task yet.
 // If a task call is not answered, the task is closed as no_pickup and the owner is called with that result.
-export async function startCall(phoneNumber: string, mode: 'task' | 'report', taskId: string) {
+export async function startCall(phoneNumber: string, mode: Mode, taskId?: string) {
   const room = `${mode}-${randomUUID()}`;
   const identity = room.replace(`${mode}-`, 'phone-');
-  if (mode === 'task') await markCalling(taskId);
+  if (mode === 'task' && taskId) await markCalling(taskId);
   const lk = livekit();
   await lk.room.createRoom({ name: room });
   await lk.agentDispatch.createDispatch(room, agentName, { metadata: JSON.stringify({ mode, identity, taskId }) });
   void dial(room, identity, phoneNumber).catch(async (error: unknown) => {
     console.error('dial failed', error);
     await closeRoom(room);
-    if (mode !== 'task') return;
-    await saveOutcome(taskId, 'no_pickup', 'The call was not answered.');
-    await completeTask(taskId, []);
-    await startCall(env.ALLOWED_CALLER_NUMBER, 'report', taskId);
+    if (mode !== 'task' || !taskId) return;
+    try {
+      await reportNoPickup(taskId, 'The call was not answered or could not be connected.');
+    } catch (reportError) {
+      console.error('reporting the failed call failed', reportError);
+    }
   });
   return { room };
+}
+
+// Closes a task whose person could not be reached as no_pickup, then calls the owner with that result.
+export async function reportNoPickup(taskId: string, summary: string) {
+  await saveOutcome(taskId, 'no_pickup', summary);
+  await completeTask(taskId, []);
+  await startCall(env.ALLOWED_CALLER_NUMBER, 'report', taskId);
 }

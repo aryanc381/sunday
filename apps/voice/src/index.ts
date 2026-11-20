@@ -18,6 +18,21 @@ const taskIdSchema = z.string().regex(/^[a-f\d]{24}$/i);
 app.get('/health', (_req, res) => res.json({ status: 200, msg: 'ok' }));
 
 /*
+  purpose: Call the owner so they can give a task, without calling in; the call keeps dialing in the background.
+  req: No request body.
+  res: { status, msg, room }; 202 started, 500 error.
+*/
+app.post('/intake', async (_req, res) => {
+  try {
+    const { room } = await startCall(env.ALLOWED_CALLER_NUMBER, 'intake');
+    return res.json({ status: 202, msg: 'Calling the owner', room });
+  } catch (error) {
+    console.error('startCall failed', error);
+    return res.json({ status: 500, msg: 'Could not place the call.' });
+  }
+});
+
+/*
   purpose: Call the person of a saved task again (for example after no_pickup); the call keeps dialing in the background.
   req: { task_id: string }
   res: { status, msg, room }; 202 started, 400 invalid id or already calling, 404 no such task, 500 error.

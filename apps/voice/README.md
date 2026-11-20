@@ -39,6 +39,12 @@ curl -X PATCH https://api.vobiz.ai/api/v1/Account/{auth_id}/trunks/{trunk_id} \
   -d '{"inbound_destination":"<your-livekit-sip-host>"}'
 ```
 
+Have the agent call you instead of calling in (works from a laptop):
+
+```bash
+curl -X POST localhost:4100/intake
+```
+
 Re-run a saved task's call (for example after `no_pickup`):
 
 ```bash
@@ -49,7 +55,7 @@ curl -X POST localhost:4100/calls -H 'content-type: application/json' -d '{"task
 
 | Path | Purpose |
 |---|---|
-| `src/index.ts` | Express server: `POST /calls { task_id }`, `GET /health` |
+| `src/index.ts` | Express server: `POST /intake`, `POST /calls { task_id }`, `GET /health` |
 | `src/call.ts` | Creates the room, sends the agent in, dials through Vobiz; a failed task dial becomes `no_pickup` |
 | `src/agent.ts` | Worker: mode, caller check, runs the call, starts the next call |
 | `src/call-agent.ts` | One turn: ask Sarvam, speak `say`, run the action |

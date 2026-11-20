@@ -91,9 +91,10 @@ Differences from the discussed tree, all for simplicity:
 | Method | Path | Auth | Request | Success | Failures |
 |---|---|---|---|---|---|
 | GET | `/health` | none | none | `{ status: 200, msg }` | none |
+| POST | `/intake` #NEW | none, local only | none | `{ status: 202, msg, room }` | 500 dial error |
 | POST | `/calls` #MODIFIED | none, local only | `{ task_id }` | `{ status: 202, msg, room }` | 400 bad id or task already calling, 404 no task, 500 dial error |
 
-Inbound is SIP, not HTTP. The old `{ phone_number }` body is removed.
+`/intake` makes the agent call the owner for intake, so the flow works without inbound. Inbound is SIP, not HTTP. The old `{ phone_number }` body is removed.
 
 ## 6. Services
 
