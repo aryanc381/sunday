@@ -6,6 +6,8 @@ if (missing.length) throw new Error(`Missing env values: ${missing.join(', ')}`)
 
 export const env = {
   PORT: Number(process.env.PORT ?? 4100),
+  // The worker's own HTTP port; 8082 so it does not clash with another LiveKit worker on the default 8081.
+  WORKER_PORT: Number(process.env.WORKER_PORT ?? 8082),
   LIVEKIT_URL: process.env.LIVEKIT_URL as string,
   LIVEKIT_API_KEY: process.env.LIVEKIT_API_KEY as string,
   LIVEKIT_API_SECRET: process.env.LIVEKIT_API_SECRET as string,

@@ -92,5 +92,5 @@ export default defineAgent({ entry: runVoiceAgent });
 
 // Starts the worker when this file is run directly: `npm run worker -w @sunday/voice`.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  cli.runApp(new ServerOptions({ agent: fileURLToPath(import.meta.url), agentName }));
+  cli.runApp(new ServerOptions({ agent: fileURLToPath(import.meta.url), agentName, port: env.WORKER_PORT }));
 }
