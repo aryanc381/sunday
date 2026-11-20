@@ -1,0 +1,30 @@
+{
+  "name": "@sunday/voice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sunday voice bot: a phone call with one prompt, over Vobiz and LiveKit",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "worker": "tsx src/agent.ts start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@livekit/agents": "1.10.0",
+    "@livekit/agents-plugin-openai": "1.10.0",
+    "@livekit/agents-plugin-sarvam": "1.10.0",
+    "@livekit/agents-plugin-silero": "1.10.0",
+    "@livekit/protocol": "1.53.0",
+    "@livekit/rtc-node": "1.2.2",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "livekit-server-sdk": "2.19.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.23.12",
+    "typescript": "^5.6.0"
+  }
+}
