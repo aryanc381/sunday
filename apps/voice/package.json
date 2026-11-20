@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "worker": "tsx src/agent.ts start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "inbound-setup": "tsx scripts/inbound-setup.ts"
   },
   "dependencies": {
     "@livekit/agents": "1.10.0",
@@ -19,6 +20,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "livekit-server-sdk": "2.19.3",
+    "mongoose": "^8.24.10",
+    "openai": "^6.49.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

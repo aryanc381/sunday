@@ -2,6 +2,13 @@
 # Based on the official file: https://github.com/livekit/sip/blob/main/docker-compose.yaml
 # LiveKit and SIP use host networking. On Docker Desktop for Mac, turn on Settings > Resources > Network > Enable host networking.
 services:
+  mongo:
+    image: mongo:7
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-data:/data/db
+
   redis:
     image: redis:7.4.12-alpine
     ports:
@@ -32,3 +39,6 @@ services:
         use_external_ip: true
         logging:
           level: info
+
+volumes:
+  mongo-data:
